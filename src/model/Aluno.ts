@@ -1,3 +1,7 @@
+import { DatabaseModel } from "./DatabaseModel.js";
+
+const database = new DatabaseModel().pool;
+
 class Aluno {
 
     private id_aluno: number = 0;
@@ -8,6 +12,7 @@ class Aluno {
     private endereco: string;
     private email: string;
     private celular: string;
+    private status_aluno: boolean = true;
 
     constructor(
         _nome: string,
@@ -96,6 +101,73 @@ class Aluno {
     public setCelular(celular: string): void {
         this.celular = celular;
     }
+
+    // ra
+    public getRA(): string {
+        return this.ra;
+    }
+
+    public setRA(ra: string): void {
+        this.ra = ra;
+    }
+
+    // status_aluno
+    public getStatusAluno(): boolean {
+        return this.status_aluno;
+    }
+
+    public setStatusAluno(status_aluno: boolean): void {
+        this.status_aluno = status_aluno;
+    }
+
+    /**
+     * Retorna uma lista com todos os alunos cadastrados no banco de dados
+     * 
+     * @returns Lista com todos os alunos cadastrados no banco de dados
+     */
+    static async listarAlunos(): Promise<Array<Aluno> | null> {
+        // Criando lista vazia para armazenar os alunos
+        let listaDeAlunos: Array<Aluno> = [];
+
+        try {
+            // Query para consulta no banco de dados
+            const querySelectAluno = `SELECT * FROM Aluno WHERE status_aluno = TRUE;`;
+
+            // executa a query no banco de dados
+            const respostaBD = await database.query(querySelectAluno);
+
+            // percorre cada resultado retornado pelo banco de dados
+            // aluno é o apelido que demos para cada linha retornada do banco de dados
+            respostaBD.rows.forEach((aluno: any) => {
+
+                // criando objeto aluno
+                let novoAluno = new Aluno(
+                    aluno.nome,
+                    aluno.sobrenome,
+                    aluno.data_nascimento,
+                    aluno.endereco,
+                    aluno.email,
+                    aluno.celular
+                );
+                // adicionando o ID ao objeto
+                novoAluno.setIdAluno(aluno.id_aluno);
+                novoAluno.setRA(aluno.ra);
+                novoAluno.setStatusAluno(aluno.status_aluno);
+
+                // adicionando a pessoa na lista
+                listaDeAlunos.push(novoAluno);
+            });
+
+            // retornado a lista de pessoas para quem chamou a função
+            return listaDeAlunos;
+        } catch (error) {
+            // exibe detalhes do erro no console
+            console.log(`Erro ao acessar o modelo: ${error}`);
+            // retorna nulo
+            return null;
+        }
+    }
+
 }
 
 export default Aluno;
