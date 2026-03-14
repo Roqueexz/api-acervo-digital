@@ -70,6 +70,43 @@ class LivroController extends Livro {
             return res.status(500).json({ mensagem: 'Erro ao remover o livro.' });
         }
     }
+
+    static async atualizar(req: Request, res: Response): Promise<Response> {
+        try {
+            const idLivro = parseInt(req.query.idLivro as string);
+
+            if (isNaN(idLivro)) {
+                return res.status(400).json({ mensagem: "ID do livro inválido." });
+            }
+
+            const dadosRecebidos: LivroDTO = req.body;
+
+            const livro = new Livro(
+                dadosRecebidos.titulo,
+                dadosRecebidos.autor,
+                dadosRecebidos.editora,
+                (dadosRecebidos.ano_publicacao ?? 0).toString(),
+                dadosRecebidos.isbn,
+                dadosRecebidos.quant_total,
+                dadosRecebidos.quant_disponivel,
+                dadosRecebidos.quant_aquisicao,
+                dadosRecebidos.valor_aquisicao ?? 0
+            );
+
+            livro.setIdLivro(idLivro);
+
+            const sucesso = await Livro.atualizarLivro(livro);
+
+            if (sucesso) {
+                return res.status(200).json({ mensagem: "Cadastro atualizado com sucesso!" });
+            } else {
+                return res.status(400).json({ mensagem: "Não foi possível atualizar o livro no banco de dados." });
+            }
+        } catch (error) {
+            console.error(`Erro ao atualizar livro: ${error}`);
+            return res.status(500).json({ mensagem: "Erro ao atualizar o livro." });
+        }
+    }
 }
 
 export default LivroController;
