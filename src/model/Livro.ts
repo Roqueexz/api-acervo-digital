@@ -251,6 +251,44 @@ class Livro {
             return false;
         }
     }
+
+    /**
+     * Remove um livro do banco de dados
+     * @param id_livro ID do livro a ser removido
+     * @returns Boolean indicando se a remoção foi bem-sucedida
+    */
+    static async removerLivro(id_livro: number): Promise<boolean> {
+        try {
+            const livro: LivroDTO | null = await this.listarLivro(id_livro);
+
+            if (livro && livro.status_livro) {
+                // Cria a consulta para rmeover empréstimo do banco de dados
+                const queryDeleteEmprestimoLivro = `UPDATE emprestimo
+                                                    SET status_emprestimo_registro = FALSE 
+                                                    WHERE id_livro=${id_livro}`;
+
+                // executa a query para remover empréstimo
+                await database.query(queryDeleteEmprestimoLivro);
+
+                // Construção da query SQL para deletar o Livro.
+                const queryDeleteLivro = `UPDATE livro
+                                        SET status_livro = FALSE 
+                                        WHERE id_livro=${id_livro};`;
+
+                // Executa a query de exclusão e verifica se a operação foi bem-sucedida.
+                const result = await database.query(queryDeleteLivro);
+                    
+                return result.rowCount != 0;
+            }
+
+            return false;
+        } catch (error) {
+            // Exibe detalhes do erro no console
+            console.log(`Erro na consulta: ${error}`);
+            // retorna o valor fa variável de controle
+            return false;
+        }
+    }
 }
 
 export default Livro;
