@@ -79,11 +79,11 @@ class Emprestimo {
         this.status_emprestimo_registro = value;
     }
 
-     /**
-     * Retorna uma lista com todos os Emprestimos cadastrados no banco de dados
-     * 
-     * @returns Lista com todos os Emprestimos cadastrados no banco de dados
-     */
+    /**
+    * Retorna uma lista com todos os Emprestimos cadastrados no banco de dados
+    * 
+    * @returns Lista com todos os Emprestimos cadastrados no banco de dados
+    */
     static async listarEmprestimos(): Promise<Array<EmprestimoDTO> | null> {
         // Criando lista vazia para armazenar os emprestimos
         let listaDeEmprestimos: Array<EmprestimoDTO> = [];
@@ -150,6 +150,56 @@ class Emprestimo {
             return null;
         }
     }
+
+    /**
+     * Retorna as informações de um empréstimo informado pelo ID
+     * 
+     * @param id_emprestimo Identificador único do empréstimo
+     * @returns Objeto com informações do empréstimo
+     */
+    static async listarEmprestimo(id_emprestimo: number): Promise<EmprestimoDTO | null> {
+        try {
+            const querySelectEmprestimo = `SELECT e.id_emprestimo, e.id_aluno, e.id_livro,
+                       e.data_emprestimo, e.data_devolucao, e.status_emprestimo, e.status_emprestimo_registro,
+                       a.ra, a.nome, a.sobrenome, a.celular, a.email,
+                       l.titulo, l.autor, l.editora, l.isbn
+                FROM Emprestimo e
+                JOIN Aluno a ON e.id_aluno = a.id_aluno
+                JOIN Livro l ON e.id_livro = l.id_livro
+                WHERE e.id_emprestimo = $1;`;
+
+            const respostaBD = await database.query(querySelectEmprestimo, [id_emprestimo]);
+
+            const emprestimoDTO: EmprestimoDTO = {
+                id_emprestimo: respostaBD.rows[0].id_emprestimo,
+                data_emprestimo: respostaBD.rows[0].data_emprestimo,
+                data_devolucao: respostaBD.rows[0].data_devolucao,
+                status_emprestimo: respostaBD.rows[0].status_emprestimo,
+                status_emprestimo_registro: respostaBD.rows[0].status_emprestimo_registro,
+                aluno: {
+                    id_aluno: respostaBD.rows[0].id_aluno,
+                    ra: respostaBD.rows[0].ra,
+                    nome: respostaBD.rows[0].nome,
+                    sobrenome: respostaBD.rows[0].sobrenome,
+                    celular: respostaBD.rows[0].celular,
+                    email: respostaBD.rows[0].email
+                },
+                livro: {
+                    id_livro: respostaBD.rows[0].id_aluno,
+                    titulo: respostaBD.rows[0].titulo,
+                    autor: respostaBD.rows[0].autor,
+                    editora: respostaBD.rows[0].editora,
+                    isbn: respostaBD.rows[0].isbn
+                }
+            };
+
+            return emprestimoDTO;
+        } catch (error) {
+            console.error(`Erro ao realizar consulta: ${error}`);
+            return null;
+        }
+    }
+
 }
 
 export default Emprestimo;
