@@ -168,6 +168,55 @@ class Aluno {
         }
     }
 
+    /**
+     * Retorna as informações de um aluno informado pelo ID
+     * 
+     * @param idAluno Identificador único do aluno
+     * @returns Objeto com informações do aluno
+     */
+    static async listarAluno(idAluno: number): Promise<Aluno | null> {
+        try {
+            // Bloco try: aqui tentamos executar o código que pode gerar um erro.
+            // Se ocorrer algum erro dentro deste bloco, ele será capturado pelo catch.
+
+            // Define a query SQL para selecionar um aluno com base no ID fornecido
+            const querySelectAluno = `SELECT * FROM aluno WHERE id_aluno = ${idAluno}`;
+
+            // Executa a consulta no banco de dados e aguarda o resultado
+            const respostaBD = await database.query(querySelectAluno);
+
+            // Cria um novo objeto da classe Aluno com os dados retornados do banco
+            let aluno = new Aluno(
+                respostaBD.rows[0].nome,             // Nome do aluno
+                respostaBD.rows[0].sobrenome,        // Sobrenome do aluno
+                respostaBD.rows[0].data_nascimento,  // Data de nascimento do aluno
+                respostaBD.rows[0].endereco,         // Endereço do aluno
+                respostaBD.rows[0].email,            // E-mail do aluno
+                respostaBD.rows[0].celular           // Celular do aluno
+            );
+
+            // Define o ID do aluno no objeto Aluno
+            aluno.setIdAluno(respostaBD.rows[0].id_aluno);
+
+            // Define o RA (Registro Acadêmico) do aluno
+            aluno.setRA(respostaBD.rows[0].ra);
+
+            // Define o status do aluno (ativo, inativo, etc.)
+            aluno.setStatusAluno(respostaBD.rows[0].status_aluno);
+
+            // Retorna o objeto aluno preenchido com os dados do banco
+            return aluno;
+        } catch (error) {
+            // Bloco catch: se algum erro ocorrer no bloco try, ele será capturado aqui.
+            // Isso evita que o erro interrompa a execução do programa.
+
+            // Exibe uma mensagem de erro no console para facilitar o debug
+            console.log(`Erro ao realizar a consulta: ${error}`);
+
+            // Retorna null para indicar que não foi possível buscar o aluno
+            return null;
+        }
+    }
 }
 
 export default Aluno;
