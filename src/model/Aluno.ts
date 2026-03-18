@@ -61,16 +61,6 @@ class Aluno {
     public getStatusAluno(): boolean { return this.status_aluno; }
     public setStatusAluno(status_aluno: boolean): void { this.status_aluno = status_aluno; }
 
-    // ==================== MÉTODOS ESTÁTICOS (operações no banco de dados) ====================
-    // Métodos "static" pertencem à classe, não ao objeto — são chamados como Aluno.listarAlunos()
-
-    /**
-     * Retorna uma lista com todos os alunos cadastrados no banco de dados
-     * 
-     * @returns Lista com todos os alunos cadastrados no banco de dados
-     */
-    // "async" indica que este método é assíncrono — ele pode "esperar" por operações demoradas (como banco de dados)
-    // Retorna uma Promise que, quando resolvida, contém um Array de AlunoDTO ou null
     static async listarAlunos(): Promise<Array<AlunoDTO> | null> {
     try {
         const querySelectAluno = `SELECT * FROM Aluno WHERE status_aluno = TRUE;`;
@@ -95,14 +85,6 @@ class Aluno {
         return null;
     }
 }
-
-    /**
-     * Retorna as informações de um aluno informado pelo ID
-     * 
-     * @param idAluno Identificador único do aluno
-     * @returns Objeto com informações do aluno
-     */
-    // Recebe o ID do aluno como parâmetro e retorna um AlunoDTO ou null
    static async listarAluno(id_aluno: number): Promise<AlunoDTO | null> {
     try {
         const querySelectAluno = `SELECT * FROM aluno WHERE id_aluno = $1`;
@@ -126,8 +108,6 @@ class Aluno {
         return null;
     }
 }
-
-    
    static async cadastrarAluno(aluno: Aluno): Promise<boolean> {
     try {
         const queryInsertAluno = `INSERT INTO Aluno (nome, sobrenome, data_nascimento, endereco, email, celular)
@@ -157,7 +137,6 @@ class Aluno {
         return false;
     }
 }
-
    static async removerAluno(id_aluno: number): Promise<boolean> {
     try {
         const aluno: AlunoDTO | null = await this.listarAluno(id_aluno);
@@ -186,55 +165,48 @@ class Aluno {
         return false;
     }
 }
+ static async atualizarAluno(aluno: Aluno): Promise<boolean> {
+    try {
+        // Corrigido: usando getIdAluno() no lugar de aluno.id_aluno,
+        // pois id_aluno é privado e deve ser acessado pelo getter
+        const alunoConsulta: AlunoDTO | null = await this.listarAluno(aluno.getIdAluno());
 
-    /**
-    * Atualiza os dados de um aluno no banco de dados.
-    * @param aluno Objeto do tipo Aluno com os novos dados
-    * @returns true caso sucesso, false caso erro
-    */
-    // Recebe um objeto Aluno com os dados atualizados e os salva no banco
-    static async atualizarAluno(aluno: Aluno): Promise<boolean> {
-        try {
-            // Antes de atualizar, verifica se o aluno existe e está ativo no banco
-            const alunoConsulta: AlunoDTO | null = await this.listarAluno(aluno.id_aluno);
+        if (alunoConsulta && alunoConsulta.status_aluno) {
+            const queryAtualizarAluno = `UPDATE Aluno SET 
+                                            nome = $1, 
+                                            sobrenome = $2,
+                                            data_nascimento = $3, 
+                                            endereco = $4,
+                                            celular = $5, 
+                                            email = $6                                            
+                                        WHERE id_aluno = $7`;
 
-            // Só prossegue com a atualização se o aluno existir e estiver ativo
-            if (alunoConsulta && alunoConsulta.status_aluno) {
-                // Query SQL de atualização — cada campo recebe um placeholder "$n"
-                // O WHERE garante que só o aluno com o ID correto seja atualizado
-               const queryAtualizarAluno = `UPDATE Aluno SET 
-                                nome = $1, 
-                                sobrenome = $2,
-                                data_nascimento = $3, 
-                                endereco = $4,
-                                celular = $5, 
-                                email = $6                                            
-                            WHERE id_aluno = $7`;
-                // Executa a query de atualização com os valores do objeto aluno recebido
-                const respostaBD = await database.query(queryAtualizarAluno, [
-                    aluno.getNome().toUpperCase(),       // Nome em maiúsculas
-                    aluno.getSobrenome().toUpperCase(),  // Sobrenome em maiúsculas
-                    aluno.getDataNascimento(),           // Data de nascimento
-                    aluno.getEndereco().toUpperCase(),   // Endereço em maiúsculas
-                    aluno.getCelular(),                  // Celular
-                    aluno.getEmail().toLowerCase(),      // E-mail em minúsculas
-                    aluno.id_aluno                       // ID do aluno (para o WHERE)
-                ]);
+            // Valores extraídos em array separado — mesma razão da cadastrarAluno,
+            // evita lista longa dentro do database.query
+            const valores = [
+                aluno.getNome().toUpperCase(),
+                aluno.getSobrenome().toUpperCase(),
+                aluno.getDataNascimento(),
+                aluno.getEndereco().toUpperCase(),
+                aluno.getCelular(),
+                aluno.getEmail().toLowerCase(),
+                // Corrigido: usando getIdAluno() no lugar de aluno.id_aluno
+                aluno.getIdAluno()
+            ];
 
-                // Se rowCount for diferente de 0, a atualização funcionou — retorna true
-                if (respostaBD.rowCount != 0) {
-                    return true;
-                }
-            }
+            const respostaBD = await database.query(queryAtualizarAluno, valores);
 
-            // Se o aluno não existe, está inativo, ou o UPDATE não afetou nenhuma linha, retorna false
-            return false;
-        } catch (error) {
-            // Exibe o erro no console e retorna false em caso de exceção
-            console.log(`Erro na consulta: ${error}`);
-            return false;
+            // Corrigido: != trocado por !== (igualdade estrita) e adicionado ?? 0
+            // para evitar comparação com null caso rowCount seja nulo
+            return (respostaBD.rowCount ?? 0) > 0;
         }
+
+        return false;
+    } catch (error) {
+        console.log(`Erro na consulta: ${error}`);
+        return false;
     }
+}
 
 }
 
