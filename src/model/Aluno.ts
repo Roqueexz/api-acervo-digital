@@ -127,90 +127,65 @@ class Aluno {
     }
 }
 
-    /**
-    * Cadastra um novo aluno no banco de dados
-    * @param aluno Objeto Aluno contendo as informações a serem cadastradas
-    * @returns Boolean indicando se o cadastro foi bem-sucedido
-    */
-    // Recebe um objeto Aluno completo e tenta inseri-lo no banco de dados
-    static async cadastrarAluno(aluno: Aluno): Promise<boolean> {
-        try {
-            // Query SQL de inserção — os "$1", "$2"... são placeholders substituídos pelos valores reais
-            // "RETURNING id_aluno" faz o banco retornar o ID gerado automaticamente após o INSERT
-            const queryInsertAluno = `INSERT INTO Aluno (nome, sobrenome, data_nascimento, endereco, email, celular)
-                          VALUES ($1, $2, $3, $4, $5, $6) RETURNING id_aluno;`;
+    
+   static async cadastrarAluno(aluno: Aluno): Promise<boolean> {
+    try {
+        const queryInsertAluno = `INSERT INTO Aluno (nome, sobrenome, data_nascimento, endereco, email, celular)
+                                  VALUES ($1, $2, $3, $4, $5, $6) RETURNING id_aluno;`;
 
-            // Executa a query passando os valores do objeto aluno
-            // .toUpperCase() converte texto para maiúsculas; .toLowerCase() converte para minúsculas
-            const result = await database.query(queryInsertAluno, [aluno.getNome().toUpperCase(),
-            aluno.getSobrenome().toUpperCase(),     // Sobrenome em maiúsculas
-            aluno.getDataNascimento(),              // Data de nascimento sem transformação
-            aluno.getEndereco().toUpperCase(),      // Endereço em maiúsculas
-            aluno.getEmail().toLowerCase(),         // E-mail em minúsculas
-            aluno.getCelular()]);                   // Celular sem transformação
+        // Valores extraídos em array separado — evita uma lista longa dentro do database.query,
+        // tornando o código mais fácil de ler e de adicionar/remover campos no futuro
+        const valores = [
+            aluno.getNome().toUpperCase(),
+            aluno.getSobrenome().toUpperCase(),
+            aluno.getDataNascimento(),
+            aluno.getEndereco().toUpperCase(),
+            aluno.getEmail().toLowerCase(),
+            aluno.getCelular()
+        ];
 
-            // Verifica se o banco retornou pelo menos uma linha (ou seja, o INSERT funcionou)
-            if (result.rows.length > 0) {
-                // Exibe no console o ID do aluno recém-cadastrado
-                console.log(`Aluno cadastrado com sucesso. ID: ${result.rows[0].id_aluno}`);
-                // Retorna true para indicar sucesso
-                return true;
-            }
+        const result = await database.query(queryInsertAluno, valores);
 
-            // Se nenhuma linha foi retornada, o cadastro não funcionou — retorna false
-            return false;
-        } catch (error) {
-            // Captura e exibe qualquer erro ocorrido durante o cadastro
-            console.error(`Erro ao cadastrar aluno: ${error}`);
-            // Retorna false indicando falha
-            return false;
+        if (result.rows.length > 0) {
+            console.log(`Aluno cadastrado com sucesso. ID: ${result.rows[0].id_aluno}`);
+            return true;
         }
+
+        return false;
+    } catch (error) {
+        console.error(`Erro ao cadastrar aluno: ${error}`);
+        return false;
     }
+}
 
-    /**
-    * Remove um aluno do banco de dados
-    * @param id_aluno ID do aluno a ser removido
-    * @returns Boolean indicando se a remoção foi bem-sucedida
-   */
-    // Recebe o ID do aluno e realiza uma "remoção lógica" (não apaga do banco, apenas desativa)
-    static async removerAluno(id_aluno: number): Promise<boolean> {
-        try {
-            // Busca o aluno no banco antes de tentar remover, para verificar se ele existe e está ativo
-            const aluno: AlunoDTO | null = await this.listarAluno(id_aluno);
+   static async removerAluno(id_aluno: number): Promise<boolean> {
+    try {
+        const aluno: AlunoDTO | null = await this.listarAluno(id_aluno);
 
-            // Só prossegue se o aluno existir (não for null) E estiver com status ativo (true)
-            if (aluno && aluno.status_aluno) {
-                // Query que desativa todos os empréstimos relacionados ao aluno
-                // Em vez de apagar, usa UPDATE para setar o status como FALSE (remoção lógica)
-                const queryDeleteEmprestimoAluno = `UPDATE emprestimo 
-                                                    SET status_emprestimo_registro = FALSE
-                                                    WHERE id_aluno=$1;`;
+        if (aluno && aluno.status_aluno) {
+            const queryDeleteEmprestimoAluno = `UPDATE emprestimo 
+                                                SET status_emprestimo_registro = FALSE
+                                                WHERE id_aluno = $1;`;
 
-                // Executa a desativação dos empréstimos do aluno
-                await database.query(queryDeleteEmprestimoAluno, [id_aluno]);
+            await database.query(queryDeleteEmprestimoAluno, [id_aluno]);
 
-                // Query que desativa o próprio aluno (também uma remoção lógica)
-                const queryDeleteAluno = `UPDATE aluno 
-                                        SET status_aluno = FALSE
-                                        WHERE id_aluno=$1;`;
+            const queryDeleteAluno = `UPDATE aluno 
+                                      SET status_aluno = FALSE
+                                      WHERE id_aluno = $1;`;
 
-                // Executa a desativação do aluno e armazena o resultado
-                const result = await database.query(queryDeleteAluno, [id_aluno]);
+            const result = await database.query(queryDeleteAluno, [id_aluno]);
 
-                // "rowCount" indica quantas linhas foram afetadas pelo UPDATE
-                // Se for diferente de 0, significa que o aluno foi desativado com sucesso
-                return true;
-            }
-
-            // Se o aluno não existir ou já estiver inativo, retorna false
-            return false;
-
-        } catch (error) {
-            // Exibe o erro no console e retorna false em caso de falha
-            console.log(`Erro na consulta: ${error}`);
-            return false;
+            // Corrigido: antes retornava true sem verificar se o UPDATE afetou alguma linha.
+            // rowCount ?? 0 garante que se rowCount for null, trate como 0
+            return (result.rowCount ?? 0) > 0;
         }
+
+        return false;
+    } catch (error) {
+        console.log(`Erro na consulta: ${error}`);
+        return false;
     }
+}
 
     /**
     * Atualiza os dados de um aluno no banco de dados.
