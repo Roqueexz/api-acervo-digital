@@ -1,157 +1,65 @@
-    // Importa o tipo AlunoDTO, que define a "forma" dos dados de um aluno (como um molde/contrato)
 import type AlunoDTO from "../dto/AlunoDTO.js";
-// Importa a classe DatabaseModel, responsável por gerenciar a conexão com o banco de dados
 import { DatabaseModel } from "./DatabaseModel.js";
 
-// Cria uma instância do DatabaseModel e acessa o pool de conexões com o banco de dados
-// O "pool" é um conjunto de conexões reutilizáveis, mais eficiente que abrir/fechar uma por vez
+// ✅ Pool extraído uma única vez — evita criar nova instância a cada uso
 const database = new DatabaseModel().pool;
 
-// Define a classe Aluno, que representa um aluno no sistema
 class Aluno {
 
-    // Atributo privado: ID único do aluno no banco de dados (começa em 0, pois ainda não foi salvo)
     private id_aluno: number = 0;
-    // Atributo privado: Registro Acadêmico do aluno (começa vazio)
     private ra: string = "";
-    // Atributo privado: Primeiro nome do aluno
     private nome: string;
-    // Atributo privado: Sobrenome do aluno
     private sobrenome: string;
-    // Atributo privado: Data de nascimento do aluno
     private data_nascimento: Date;
-    // Atributo privado: Endereço residencial do aluno
     private endereco: string;
-    // Atributo privado: E-mail do aluno
     private email: string;
-    // Atributo privado: Número de celular do aluno
     private celular: string;
-    // Atributo privado: Status do aluno (true = ativo, false = inativo/removido)
     private status_aluno: boolean = true;
 
-    // Construtor: método especial chamado automaticamente ao criar um novo objeto Aluno
-    // Os parâmetros com "_" na frente são uma convenção para diferenciar dos atributos da classe
     constructor(
-        _nome: string,           // Nome obrigatório
-        _sobrenome: string,      // Sobrenome obrigatório
-        _data_nascimento: Date,  // Data de nascimento obrigatória
-        _endereco: string,       // Endereço obrigatório
-        _email: string,          // E-mail obrigatório
-        _celular?: string        // Celular opcional (o "?" indica que pode ser omitido)
+        _nome: string,
+        _sobrenome: string,
+        _data_nascimento: Date,
+        _endereco: string,
+        _email: string,
+        _celular?: string
     ) {
-        // Atribui o valor recebido ao atributo interno da classe
         this.nome = _nome;
         this.sobrenome = _sobrenome;
         this.data_nascimento = _data_nascimento;
         this.endereco = _endereco;
         this.email = _email;
-        // Se _celular foi informado, usa esse valor; senão, usa string vazia ("")
-        // O operador "??" é chamado de "nullish coalescing" — retorna o lado direito se o esquerdo for null/undefined
         this.celular = _celular ?? "";
     }
 
-    // ==================== GETTERS E SETTERS ====================
-    // Getters e setters são métodos públicos que permitem ler/alterar atributos privados com segurança
+    public getIdAluno(): number { return this.id_aluno; }
+    public setIdAluno(id_aluno: number): void { this.id_aluno = id_aluno; }
 
-    // Getter: retorna o ID do aluno
-    public getIdAluno(): number {
-        return this.id_aluno;
-    }
+    public getRa(): string { return this.ra; }
+    public setRa(ra: string): void { this.ra = ra; }
 
-    // Setter: define um novo valor para o ID do aluno
-    public setIdAluno(id_aluno: number): void {
-        this.id_aluno = id_aluno;
-    }
+    // ✅ Getters/Setters duplicados do RA removidos (getRA/setRA eram idênticos)
 
-    // Getter: retorna o RA do aluno
-    public getRa(): string {
-        return this.ra;
-    }
+    public getNome(): string { return this.nome; }
+    public setNome(nome: string): void { this.nome = nome; }
 
-    // Setter: define um novo valor para o RA do aluno
-    public setRa(ra: string): void {
-        this.ra = ra;
-    }
+    public getSobrenome(): string { return this.sobrenome; }
+    public setSobrenome(sobrenome: string): void { this.sobrenome = sobrenome; }
 
-    // Getter: retorna o nome do aluno
-    public getNome(): string {
-        return this.nome;
-    }
+    public getDataNascimento(): Date { return this.data_nascimento; }
+    public setDataNascimento(data_nascimento: Date): void { this.data_nascimento = data_nascimento; }
 
-    // Setter: define um novo valor para o nome do aluno
-    public setNome(nome: string): void {
-        this.nome = nome;
-    }
+    public getEndereco(): string { return this.endereco; }
+    public setEndereco(endereco: string): void { this.endereco = endereco; }
 
-    // Getter: retorna o sobrenome do aluno
-    public getSobrenome(): string {
-        return this.sobrenome;
-    }
+    public getEmail(): string { return this.email; }
+    public setEmail(email: string): void { this.email = email; }
 
-    // Setter: define um novo valor para o sobrenome do aluno
-    public setSobrenome(sobrenome: string): void {
-        this.sobrenome = sobrenome;
-    }
+    public getCelular(): string { return this.celular; }
+    public setCelular(celular: string): void { this.celular = celular; }
 
-    // Getter: retorna a data de nascimento do aluno
-    public getDataNascimento(): Date {
-        return this.data_nascimento;
-    }
-
-    // Setter: define uma nova data de nascimento para o aluno
-    public setDataNascimento(data_nascimento: Date): void {
-        this.data_nascimento = data_nascimento;
-    }
-
-    // Getter: retorna o endereço do aluno
-    public getEndereco(): string {
-        return this.endereco;
-    }
-
-    // Setter: define um novo endereço para o aluno
-    public setEndereco(endereco: string): void {
-        this.endereco = endereco;
-    }
-
-    // Getter: retorna o e-mail do aluno
-    public getEmail(): string {
-        return this.email;
-    }
-
-    // Setter: define um novo e-mail para o aluno
-    public setEmail(email: string): void {
-        this.email = email;
-    }
-
-    // Getter: retorna o celular do aluno
-    public getCelular(): string {
-        return this.celular;
-    }
-
-    // Setter: define um novo número de celular para o aluno
-    public setCelular(celular: string): void {
-        this.celular = celular;
-    }
-
-    // Getter duplicado do RA (mesma função que getRa acima — provavelmente um erro de duplicidade no código original)
-    public getRA(): string {
-        return this.ra;
-    }
-
-    // Setter duplicado do RA (mesma função que setRa acima)
-    public setRA(ra: string): void {
-        this.ra = ra;
-    }
-
-    // Getter: retorna o status do aluno (true = ativo, false = inativo)
-    public getStatusAluno(): boolean {
-        return this.status_aluno;
-    }
-
-    // Setter: define um novo status para o aluno
-    public setStatusAluno(status_aluno: boolean): void {
-        this.status_aluno = status_aluno;
-    }
+    public getStatusAluno(): boolean { return this.status_aluno; }
+    public setStatusAluno(status_aluno: boolean): void { this.status_aluno = status_aluno; }
 
     // ==================== MÉTODOS ESTÁTICOS (operações no banco de dados) ====================
     // Métodos "static" pertencem à classe, não ao objeto — são chamados como Aluno.listarAlunos()
