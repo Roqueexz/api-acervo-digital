@@ -8,12 +8,12 @@ POST http://localhost:3333/api/alunos
 Content-Type: application/json
 
 {
-  "nome": "Joselito",
-  "sobrenome": "Santos",
+  "nome": "Violito",
+  "sobrenome": "Prantos",
   "data_nascimento": "2003-07-10T03:00:00.000Z",
   "endereco": "Rua do Ingá, 811",
-  "email": "joselito@semnocao.com",
-  "celular": "16991915545"
+  "email": "prantos@gmail.com",
+  "celular": "16911915245"
 }
 
 ###
@@ -21,13 +21,12 @@ PUT http://localhost:3333/api/alunos/21
 Content-Type: application/json
 
 {
-  "nome": "Joselito",
-  "sobrenome": "Freitas",
+  "nome": "Violito",
+  "sobrenome": "Prantos",
   "data_nascimento": "2003-07-10T03:00:00.000Z",
-  "endereco": "Rua do Ingá, 811",
-  "email": "joselito@semnocao.com",
-  "celular": "16991915545"
+  "endereco": "Rua do Morumba, 203",
+  "email": "pranto@gmail.com",
+  "celular": "16911915245"
 }
-
 ###
 DELETE http://localhost:3333/api/alunos/21

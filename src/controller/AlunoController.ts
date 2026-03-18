@@ -1,33 +1,18 @@
-// Importa a classe Aluno do model — é daqui que vêm os métodos de acesso ao banco de dados
 import Aluno from "../model/Aluno.js";
-// Importa os tipos Request e Response do Express — representam a requisição e a resposta HTTP
-// "type" indica que é uma importação apenas de tipo (só existe em tempo de compilação, não gera código JS)
 import { type Request, type Response } from "express";
-// Importa o tipo AlunoDTO para tipar os dados recebidos do front-end
 import type AlunoDTO from "../dto/AlunoDTO.js";
 
-// Define a classe AlunoController que HERDA da classe Aluno
-// Isso permite que o controller acesse diretamente os métodos estáticos do model (listarAlunos, cadastrarAluno, etc.)
-// A arquitetura MVC separa responsabilidades: o Model cuida do banco, o Controller cuida das requisições HTTP
+// ⚠️ AlunoController herda de Aluno apenas para acessar seus métodos estáticos.
+// O ideal seria não usar herança aqui, mas sim chamar Aluno.metodo() diretamente,
+// pois herança deve representar uma relação "é um" — um Controller não é um Model.
 class AlunoController extends Aluno {
 
-    /**
-     * Lista todos os alunos.
-     * @param req Objeto de requisição HTTP.
-     * @param res Objeto de resposta HTTP.
-     * @returns Lista de alunos em formato JSON.
-     */
-    // Método estático e assíncrono — recebe a requisição HTTP e devolve a resposta com todos os alunos
     static async todos(req: Request, res: Response) {
         try {
-            // Chama o método herdado do model Aluno para buscar todos os alunos ativos no banco
             const listaDeAlunos = await Aluno.listarAlunos();
-            // Retorna a lista em formato JSON com status HTTP 200 (OK — requisição bem-sucedida)
             res.status(200).json(listaDeAlunos);
         } catch (error) {
-            // Se ocorrer qualquer erro, exibe os detalhes no console do servidor para facilitar o debug
             console.log(`Erro ao acessar método herdado: ${error}`);
-            // Retorna uma mensagem de erro em JSON com status HTTP 500 (Internal Server Error)
             res.status(500).json("Erro ao recuperar as informações do aluno.");
         }
     }
