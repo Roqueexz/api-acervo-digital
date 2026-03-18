@@ -1,7 +1,7 @@
 GET http://localhost:3333/api/alunos
 
 ###
-GET http://localhost:3333/api/alunos/21
+GET http://localhost:3333/api/alunos/22
 
 ###
 POST http://localhost:3333/api/alunos
@@ -17,7 +17,7 @@ Content-Type: application/json
 }
 
 ###
-PUT http://localhost:3333/api/alunos/21
+PUT http://localhost:3333/api/alunos/22
 Content-Type: application/json
 
 {
@@ -29,4 +29,4 @@ Content-Type: application/json
   "celular": "16911915245"
 }
 ###
-DELETE http://localhost:3333/api/alunos/21
+DELETE http://localhost:3333/api/alunos/22
