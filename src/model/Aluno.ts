@@ -1,4 +1,4 @@
-// Importa o tipo AlunoDTO, que define a "forma" dos dados de um aluno (como um molde/contrato)
+    // Importa o tipo AlunoDTO, que define a "forma" dos dados de um aluno (como um molde/contrato)
 import type AlunoDTO from "../dto/AlunoDTO.js";
 // Importa a classe DatabaseModel, responsável por gerenciar a conexão com o banco de dados
 import { DatabaseModel } from "./DatabaseModel.js";
@@ -355,15 +355,14 @@ class Aluno {
             if (alunoConsulta && alunoConsulta.status_aluno) {
                 // Query SQL de atualização — cada campo recebe um placeholder "$n"
                 // O WHERE garante que só o aluno com o ID correto seja atualizado
-                const queryAtualizarAluno = `UPDATE Aluno SET 
-                                                    nome = '$1', 
-                                                    sobrenome = '$2',
-                                                    data_nascimento = '$3', 
-                                                    endereco = '$4',
-                                                    celular = '$5', 
-                                                    email = '$6'                                            
-                                                WHERE id_aluno = $7`;
-
+               const queryAtualizarAluno = `UPDATE Aluno SET 
+                                nome = $1, 
+                                sobrenome = $2,
+                                data_nascimento = $3, 
+                                endereco = $4,
+                                celular = $5, 
+                                email = $6                                            
+                            WHERE id_aluno = $7`;
                 // Executa a query de atualização com os valores do objeto aluno recebido
                 const respostaBD = await database.query(queryAtualizarAluno, [
                     aluno.getNome().toUpperCase(),       // Nome em maiúsculas
