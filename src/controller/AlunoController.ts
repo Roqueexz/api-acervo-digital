@@ -7,40 +7,26 @@ import type AlunoDTO from "../dto/AlunoDTO.js";
 // pois herança deve representar uma relação "é um" — um Controller não é um Model.
 class AlunoController extends Aluno {
 
-    static async todos(req: Request, res: Response) {
-        try {
-            const listaDeAlunos = await Aluno.listarAlunos();
-            res.status(200).json(listaDeAlunos);
-        } catch (error) {
-            console.log(`Erro ao acessar método herdado: ${error}`);
-            res.status(500).json("Erro ao recuperar as informações do aluno.");
-        }
+static async todos(req: Request, res: Response): Promise<Response> {
+    try {
+        const listaDeAlunos = await Aluno.listarAlunos();
+        return res.status(200).json(listaDeAlunos);
+    } catch (error) {
+        console.log(`Erro ao acessar método herdado: ${error}`);
+        return res.status(500).json({ mensagem: "Erro ao recuperar as informações do aluno." });
     }
+}
 
-    /**
-     * Retorna informações de um aluno
-     * @param req Objeto de requisição HTTP
-     * @param res Objeto de resposta HTTP.
-     * @returns Informações de aluno em formato JSON.
-     */
-    // Método que busca um único aluno com base no ID informado na URL (ex: GET /aluno/5)
-    static async aluno(req: Request, res: Response) {
-        try {
-            // Lê o parâmetro "id" da URL (req.params.id) e converte de string para número inteiro
-            // O "as string" garante ao TypeScript que o valor existe e é uma string
-            const idAluno = parseInt(req.params.id as string);
-
-            // Chama o método do model passando o ID para buscar o aluno específico no banco
-            const aluno = await Aluno.listarAluno(idAluno);
-            // Retorna o objeto do aluno em JSON com status HTTP 200 (OK)
-            res.status(200).json(aluno);
-        } catch (error) {
-            // Exibe o erro no console do servidor
-            console.log(`Erro ao acessar método herdado: ${error}`);
-            // Retorna mensagem de erro com status HTTP 500
-            res.status(500).json("Erro ao recuperar as informações do aluno.");
-        }
+   static async aluno(req: Request, res: Response): Promise<Response> {
+    try {
+        const idAluno = parseInt(req.params.id as string);
+        const aluno = await Aluno.listarAluno(idAluno);
+        return res.status(200).json(aluno);
+    } catch (error) {
+        console.log(`Erro ao acessar método herdado: ${error}`);
+        return res.status(500).json({ mensagem: "Erro ao recuperar as informações do aluno." });
     }
+}
 
     /**
       * Cadastra um novo aluno.
@@ -92,29 +78,22 @@ class AlunoController extends Aluno {
      */
     // Método que recebe um ID pela URL e realiza a remoção lógica do aluno no banco
     // "Promise<Response>" indica que este método sempre retorna uma resposta HTTP ao final
-    static async remover(req: Request, res: Response): Promise<Response> {
-        try {
-            // Lê o parâmetro "id" da URL e converte para número inteiro
-            // Exemplo de URL: DELETE /aluno/3  →  idAluno = 3
-            const idAluno = parseInt(req.params.id as string);
+   static async remover(req: Request, res: Response): Promise<Response> {
+    try {
+        const idAluno = parseInt(req.params.id as string);
+        const result = await Aluno.removerAluno(idAluno);
 
-            // Chama o método do model para remover (logicamente) o aluno com o ID informado
-            const result = await Aluno.removerAluno(idAluno);
-
-            if (result) {
-                // Retorna mensagem de sucesso com status HTTP 201 se a remoção funcionou
-                // ⚠️ Observação: o ideal aqui seria status 200 (OK), pois 201 é para criação de recursos
-                return res.status(201).json({ mensagem: 'Aluno removido com sucesso.' });
-            } else {
-                // Retorna status HTTP 404 (Not Found) se o aluno não foi encontrado ou já estava inativo
-                return res.status(404).json({ mensagem: 'Aluno não encontrado para exclusão.' });
-            }
-        } catch (error) {
-            // Exibe o erro no console e retorna status HTTP 500 em caso de exceção
-            console.log(`Erro ao remover aluno: ${error}`)
-            return res.status(500).json({ mensagem: 'Erro ao remover aluno.' });
+        if (result) {
+            // Corrigido: status 201 trocado por 200 — remoção de recurso deve retornar 200
+            return res.status(200).json({ mensagem: 'Aluno removido com sucesso.' });
+        } else {
+            return res.status(404).json({ mensagem: 'Aluno não encontrado para exclusão.' });
         }
+    } catch (error) {
+        console.log(`Erro ao remover aluno: ${error}`);
+        return res.status(500).json({ mensagem: 'Erro ao remover aluno.' });
     }
+}
 
     /**
      * Método para atualizar o cadastro de um aluno.
