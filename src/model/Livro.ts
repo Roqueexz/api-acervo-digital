@@ -1,50 +1,34 @@
-// Importa o tipo LivroDTO, que define a estrutura de dados de um livro (objeto simples, sem métodos)
 import type LivroDTO from "../dto/LivroDTO.js";
-// Importa a classe DatabaseModel, responsável por gerenciar a conexão com o banco de dados
 import { DatabaseModel } from "./DatabaseModel.js";
 
-// Cria uma instância do DatabaseModel e acessa o pool de conexões com o banco de dados
-// O "pool" gerencia múltiplas conexões simultâneas de forma eficiente
 const database = new DatabaseModel().pool;
 
-// Define a classe Livro, que representa um livro no sistema de biblioteca
 class Livro {
-    // Atributo privado: ID único do livro no banco de dados (começa em 0, pois ainda não foi salvo)
     private id_livro: number = 0;
-    // Atributo privado: Título do livro
     private titulo: string;
-    // Atributo privado: Nome do autor do livro
     private autor: string;
-    // Atributo privado: Nome da editora responsável pela publicação
     private editora: string;
-    // Atributo privado: Ano em que o livro foi publicado (string para suportar formatos como "2024")
     private ano_publicacao: string;
-    // Atributo privado: Código ISBN — identificador único internacional de livros
     private isbn: string;
-    // Atributo privado: Quantidade total de exemplares do livro no acervo
     private quant_total: number;
-    // Atributo privado: Quantidade de exemplares disponíveis para empréstimo no momento
     private quant_disponivel: number;
-    // Atributo privado: Valor pago para adquirir o livro
+    private quant_aquisicao: number;
     private valor_aquisicao: number;
-    // Atributo privado: Indica se o livro está disponível ou emprestado (começa como "Disponível")
     private status_livro_emprestado: string = "Disponível";
-    // Atributo privado: Indica se o livro está ativo no sistema (false = ainda não persistido no banco)
-    private status_livro: boolean = false;
+    // Corrigido: status_livro começa como true — um livro recém criado deve estar ativo
+    private status_livro: boolean = true;
 
-    // Construtor: chamado automaticamente ao criar um novo objeto Livro
     constructor(
-        _titulo: string,           // Título do livro — obrigatório
-        _autor: string,            // Autor do livro — obrigatório
-        _editora: string,          // Editora do livro — obrigatório
-        _ano_publicacao: string,   // Ano de publicação — obrigatório
-        _isbn: string,             // ISBN do livro — obrigatório
-        _quant_total: number,      // Quantidade total de exemplares — obrigatório
-        _quant_disponivel: number, // Quantidade disponível para empréstimo — obrigatório
-        _quant_aquisicao: number,  // Quantidade adquirida (recebido, mas não usado no construtor — ver abaixo)
-        _valor_aquisicao: number   // Valor de aquisição — obrigatório
+        _titulo: string,
+        _autor: string,
+        _editora: string,
+        _ano_publicacao: string,
+        _isbn: string,
+        _quant_total: number,
+        _quant_disponivel: number,
+        _quant_aquisicao: number,
+        _valor_aquisicao: number
     ) {
-        // Atribui os valores recebidos aos atributos internos da classe
         this.titulo = _titulo;
         this.autor = _autor;
         this.editora = _editora;
@@ -52,113 +36,46 @@ class Livro {
         this.isbn = _isbn;
         this.quant_total = _quant_total;
         this.quant_disponivel = _quant_disponivel;
+        // Corrigido: _quant_aquisicao era recebido mas nunca atribuído
+        this.quant_aquisicao = _quant_aquisicao;
         this.valor_aquisicao = _valor_aquisicao;
-        // ⚠️ Atenção: o parâmetro "_quant_aquisicao" é recebido mas nunca atribuído a nenhum atributo
-        // Isso provavelmente é um esquecimento no código original
     }
 
-    // ==================== GETTERS E SETTERS ====================
-    // Métodos públicos para acessar e modificar os atributos privados com segurança
+    public getIdLivro(): number { return this.id_livro; }
+    public setIdLivro(value: number): void { this.id_livro = value; }
 
-    // Getter: retorna o ID do livro
-    public getIdLivro(): number {
-        return this.id_livro;
-    }
-    // Setter: define um novo valor para o ID do livro
-    public setIdLivro(value: number) {
-        this.id_livro = value;
-    }
+    public getTitulo(): string { return this.titulo; }
+    public setTitulo(value: string): void { this.titulo = value; }
 
-    // Getter: retorna o título do livro
-    public getTitulo(): string {
-        return this.titulo;
-    }
-    // Setter: define um novo título para o livro
-    public setTitulo(value: string) {
-        this.titulo = value;
-    }
+    public getAutor(): string { return this.autor; }
+    public setAutor(value: string): void { this.autor = value; }
 
-    // Getter: retorna o nome do autor do livro
-    public getAutor(): string {
-        return this.autor;
-    }
-    // Setter: define um novo autor para o livro
-    public setAutor(value: string) {
-        this.autor = value;
-    }
+    public getEditora(): string { return this.editora; }
+    public setEditora(value: string): void { this.editora = value; }
 
-    // Getter: retorna o nome da editora do livro
-    public getEditora(): string {
-        return this.editora;
-    }
-    // Setter: define uma nova editora para o livro
-    public setEditora(value: string) {
-        this.editora = value;
-    }
+    public getAnoPublicacao(): string { return this.ano_publicacao; }
+    public setAnoPublicacao(value: string): void { this.ano_publicacao = value; }
 
-    // Getter: retorna o ano de publicação do livro
-    public getAnoPublicacao(): string {
-        return this.ano_publicacao;
-    }
-    // Setter: define um novo ano de publicação para o livro
-    public setAnoPublicacao(value: string) {
-        this.ano_publicacao = value;
-    }
+    public getIsbn(): string { return this.isbn; }
+    public setIsbn(value: string): void { this.isbn = value; }
 
-    // Getter: retorna o ISBN do livro
-    public getIsbn(): string {
-        return this.isbn;
-    }
-    // Setter: define um novo ISBN para o livro
-    public setIsbn(value: string) {
-        this.isbn = value;
-    }
+    public getQuantTotal(): number { return this.quant_total; }
+    public setQuantTotal(value: number): void { this.quant_total = value; }
 
-    // Getter: retorna a quantidade total de exemplares do livro
-    public getQuantTotal(): number {
-        return this.quant_total;
-    }
-    // Setter: define uma nova quantidade total de exemplares
-    public setQuantTotal(value: number) {
-        this.quant_total = value;
-    }
+    public getQuantDisponivel(): number { return this.quant_disponivel; }
+    public setQuantDisponivel(value: number): void { this.quant_disponivel = value; }
 
-    // Getter: retorna a quantidade de exemplares disponíveis para empréstimo
-    public getQuantDisponivel(): number {
-        return this.quant_disponivel;
-    }
-    // Setter: define uma nova quantidade de exemplares disponíveis
-    public setQuantDisponivel(value: number) {
-        this.quant_disponivel = value;
-    }
+    public getQuantAquisicao(): number { return this.quant_aquisicao; }
+    public setQuantAquisicao(value: number): void { this.quant_aquisicao = value; }
 
-    // Getter: retorna o valor de aquisição do livro
-    public getValorAquisicao(): number {
-        return this.valor_aquisicao;
-    }
-    // Setter: define um novo valor de aquisição para o livro
-    public setValorAquisicao(value: number) {
-        this.valor_aquisicao = value;
-    }
+    public getValorAquisicao(): number { return this.valor_aquisicao; }
+    public setValorAquisicao(value: number): void { this.valor_aquisicao = value; }
 
-    // Getter: retorna o status de empréstimo do livro (ex: "Disponível", "Emprestado")
-    public getStatusLivroEmprestado(): string {
-        return this.status_livro_emprestado;
-    }
-    // Setter: define um novo status de empréstimo para o livro
-    public setStatusLivroEmprestado(value: string) {
-        this.status_livro_emprestado = value;
-    }
+    public getStatusLivroEmprestado(): string { return this.status_livro_emprestado; }
+    public setStatusLivroEmprestado(value: string): void { this.status_livro_emprestado = value; }
 
-    // Getter: retorna se o livro está ativo no sistema (true) ou removido logicamente (false)
-    public getStatusLivro(): boolean {
-        return this.status_livro;
-    }
-    // Setter: define o status de atividade do livro no sistema
-    public setStatusLivro(value: boolean) {
-        this.status_livro = value;
-    }
-
+    public getStatusLivro(): boolean { return this.status_livro; }
+    public setStatusLivro(value: boolean): void { this.status_livro = value; }
     // ==================== MÉTODOS ESTÁTICOS (operações no banco de dados) ====================
     // Métodos "static" pertencem à classe, não ao objeto — são chamados como Livro.listarLivros()
 
