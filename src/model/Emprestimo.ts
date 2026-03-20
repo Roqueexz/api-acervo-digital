@@ -215,40 +215,28 @@ class Emprestimo {
         return false;
     }
 }
-    /**
-     * Remove um empréstimo ativo do banco de dados
-     * 
-     * @param id_emprestimo 
-     * @returns true caso o empréstimo tenha sido removido, false caso contrário
-     */
-    // Realiza uma remoção lógica: não apaga o registro, apenas muda o status para FALSE
     static async removerEmprestimo(id_emprestimo: number): Promise<boolean> {
-        try {
-            // Query de remoção lógica — usa UPDATE para desativar o registro em vez de DELETE
-            // Isso preserva o histórico de empréstimos no banco de dados
-            const queryDeleteEmprestimo = `UPDATE emprestimo 
-                                            SET status_emprestimo_registro = FALSE
-                                            WHERE id_emprestimo=$1`;
+    try {
+        const queryDeleteEmprestimo = `
+            UPDATE emprestimo 
+            SET status_emprestimo_registro = FALSE
+            WHERE id_emprestimo = $1
+        `;
 
-            // Executa a query passando o ID do empréstimo como parâmetro (substitui o $1)
-            const respostaBD = await database.query(queryDeleteEmprestimo, [id_emprestimo]);
+        const respostaBD = await database.query(queryDeleteEmprestimo, [id_emprestimo]);
 
-            // Verifica se pelo menos uma linha foi afetada pelo UPDATE
-            if (respostaBD.rowCount != 0) {
-                // Exibe mensagem de sucesso no console
-                console.log('Empréstimo removido com sucesso!');
-                // Retorna true para indicar que a remoção foi bem-sucedida
-                return true;
-            }
-
-            // Se rowCount for 0, nenhum registro foi encontrado com esse ID — retorna false
-            return false;
-
-        } catch (error) {
-            // Exibe o erro no console e retorna false em caso de falha
-            console.log(`Erro ao remover empréstimo: ${error}`);
-            return false;
+        // Corrigido: igualdade estrita e ?? 0 para evitar comparação com null
+        if ((respostaBD.rowCount ?? 0) > 0) {
+            console.log('Empréstimo removido com sucesso!');
+            return true;
         }
+
+        return false;
+
+    } catch (error) {
+        console.log(`Erro ao remover empréstimo: ${error}`);
+        return false;
+    }
     }
 }
 
