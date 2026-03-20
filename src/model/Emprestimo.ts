@@ -1,122 +1,56 @@
-// Importa o tipo EmprestimoDTO, que define a estrutura de dados de um empréstimo (objeto simples, sem métodos)
 import type EmprestimoDTO from "../dto/EmprestimoDTO.js";
-// Importa a classe DatabaseModel, responsável por gerenciar a conexão com o banco de dados
 import { DatabaseModel } from "./DatabaseModel.js";
 
-// Cria uma instância do DatabaseModel e acessa o pool de conexões com o banco de dados
-// O "pool" gerencia múltiplas conexões simultâneas de forma eficiente
 const database = new DatabaseModel().pool;
 
-// Define a classe Emprestimo, que representa um empréstimo de livro no sistema
 class Emprestimo {
 
-    // Atributo privado: ID único do empréstimo no banco de dados (começa em 0, pois ainda não foi salvo)
     private id_emprestimo: number = 0;
-    // Atributo privado: ID do aluno que realizou o empréstimo (chave estrangeira referenciando a tabela Aluno)
     private id_aluno: number;
-    // Atributo privado: ID do livro emprestado (chave estrangeira referenciando a tabela Livro)
     private id_livro: number;
-    // Atributo privado: Data em que o empréstimo foi realizado
     private data_emprestimo: Date;
-    // Atributo privado: Data prevista para devolução do livro
     private data_devolucao: Date;
-    // Atributo privado: Situação atual do empréstimo (ex: "Em Andamento", "Devolvido", "Atrasado")
     private status_emprestimo: string;
-    // Atributo privado: Indica se o registro está ativo no banco (true = ativo, false = removido logicamente)
     private status_emprestimo_registro: boolean = true;
 
-    // Construtor: chamado automaticamente ao criar um novo objeto Emprestimo
     constructor(
-        _id_aluno: number,          // ID do aluno — obrigatório
-        _id_livro: number,          // ID do livro — obrigatório
-        _data_emprestimo: Date,     // Data do empréstimo — obrigatório
-        _status_emprestimo?: string, // Status do empréstimo — opcional (o "?" indica que pode ser omitido)
-        _data_devolucao?: Date      // Data de devolução — opcional
+        _id_aluno: number,
+        _id_livro: number,
+        _data_emprestimo: Date,
+        _status_emprestimo?: string,
+        _data_devolucao?: Date
     ) {
-        // Cria uma cópia da data de empréstimo para calcular a data de devolução padrão
-        // Isso é necessário para não modificar o objeto original (_data_emprestimo)
+        // Cria cópia da data para não modificar o objeto original ao calcular o prazo padrão
         const dataDevolucaoPadrao = new Date(_data_emprestimo);
-        // Adiciona 7 dias à data de empréstimo para definir o prazo padrão de devolução
-        // getDate() retorna o dia atual, e setDate() define um novo dia somando +7
         dataDevolucaoPadrao.setDate(dataDevolucaoPadrao.getDate() + 7);
 
-        // Atribui os valores recebidos aos atributos internos da classe
         this.id_aluno = _id_aluno;
         this.id_livro = _id_livro;
         this.data_emprestimo = _data_emprestimo;
-        // Se _status_emprestimo não foi informado, usa "Em Andamento" como valor padrão
-        // O operador "??" retorna o lado direito se o esquerdo for null ou undefined
         this.status_emprestimo = _status_emprestimo ?? "Em Andamento";
-        // Se _data_devolucao não foi informada, usa a data calculada automaticamente (empréstimo + 7 dias)
         this.data_devolucao = _data_devolucao ?? dataDevolucaoPadrao;
     }
 
-    // ==================== GETTERS E SETTERS ====================
-    // Métodos públicos para acessar e modificar os atributos privados da classe com segurança
+    public getIdEmprestimo(): number { return this.id_emprestimo; }
+    public setIdEmprestimo(value: number): void { this.id_emprestimo = value; }
 
-    // Getter: retorna o ID do empréstimo
-    public getIdEmprestimo(): number {
-        return this.id_emprestimo;
-    }
-    // Setter: define um novo valor para o ID do empréstimo
-    public setIdEmprestimo(value: number) {
-        this.id_emprestimo = value;
-    }
+    public getIdAluno(): number { return this.id_aluno; }
+    public setIdAluno(value: number): void { this.id_aluno = value; }
 
-    // Getter: retorna o ID do aluno vinculado ao empréstimo
-    public getIdAluno(): number {
-        return this.id_aluno;
-    }
-    // Setter: define um novo ID de aluno para o empréstimo
-    public setIdAluno(value: number) {
-        this.id_aluno = value;
-    }
+    public getIdLivro(): number { return this.id_livro; }
+    public setIdLivro(value: number): void { this.id_livro = value; }
 
-    // Getter: retorna o ID do livro vinculado ao empréstimo
-    public getIdLivro(): number {
-        return this.id_livro;
-    }
-    // Setter: define um novo ID de livro para o empréstimo
-    public setIdLivro(value: number) {
-        this.id_livro = value;
-    }
+    public getDataEmprestimo(): Date { return this.data_emprestimo; }
+    public setDataEmprestimo(value: Date): void { this.data_emprestimo = value; }
 
-    // Getter: retorna a data em que o empréstimo foi realizado
-    public getDataEmprestimo(): Date {
-        return this.data_emprestimo;
-    }
-    // Setter: define uma nova data de empréstimo
-    public setDataEmprestimo(value: Date) {
-        this.data_emprestimo = value;
-    }
+    public getDataDevolucao(): Date { return this.data_devolucao; }
+    public setDataDevolucao(value: Date): void { this.data_devolucao = value; }
 
-    // Getter: retorna a data prevista de devolução do livro
-    public getDataDevolucao(): Date {
-        return this.data_devolucao;
-    }
-    // Setter: define uma nova data de devolução
-    public setDataDevolucao(value: Date) {
-        this.data_devolucao = value;
-    }
+    public getStatusEmprestimo(): string { return this.status_emprestimo; }
+    public setStatusEmprestimo(value: string): void { this.status_emprestimo = value; }
 
-    // Getter: retorna o status atual do empréstimo (ex: "Em Andamento", "Devolvido")
-    public getStatusEmprestimo(): string {
-        return this.status_emprestimo;
-    }
-    // Setter: define um novo status para o empréstimo
-    public setStatusEmprestimo(value: string) {
-        this.status_emprestimo = value;
-    }
-
-    // Getter: retorna se o registro do empréstimo está ativo (true) ou removido logicamente (false)
-    public getStatusEmprestimoRegistro(): boolean {
-        return this.status_emprestimo_registro;
-    }
-    // Setter: define o status do registro do empréstimo
-    public setStatusEmprestimoRegistro(value: boolean) {
-        this.status_emprestimo_registro = value;
-    }
-
+    public getStatusEmprestimoRegistro(): boolean { return this.status_emprestimo_registro; }
+    public setStatusEmprestimoRegistro(value: boolean): void { this.status_emprestimo_registro = value; }
     // ==================== MÉTODOS ESTÁTICOS (operações no banco de dados) ====================
     // Métodos "static" pertencem à classe, não ao objeto — são chamados como Emprestimo.listarEmprestimos()
 
