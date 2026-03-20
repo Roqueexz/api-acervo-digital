@@ -111,48 +111,35 @@ class Livro {
     }
 }
 
-    /**
-     * Retorna as informações de um livro informado pelo ID
-     * 
-     * @param id_livro Identificador único do livro
-     * @returns Objeto com informações do livro
-     */
-    // Recebe o ID do livro e retorna um único LivroDTO ou null
-    static async listarLivro(id_livro: number): Promise<LivroDTO | null> {
-        try {
-            // Query SQL que busca um livro específico pelo ID
-            // O "$1" é um placeholder substituído pelo valor real (proteção contra SQL Injection)
-            const querySelectLivro = `SELECT * FROM livro WHERE id_livro = $1`;
+  static async listarLivro(id_livro: number): Promise<LivroDTO | null> {
+    try {
+        const querySelectLivro = `SELECT * FROM livro WHERE id_livro = $1`;
+        const respostaBD = await database.query(querySelectLivro, [id_livro]);
 
-            // Executa a query passando o id_livro como parâmetro (substitui o $1)
-            const respostaBD = await database.query(querySelectLivro, [id_livro]);
+        // Verifica se o livro foi encontrado antes de acessar rows[0]
+        if (respostaBD.rows.length === 0) return null;
 
-            // Monta o objeto LivroDTO com os dados da primeira (e única) linha retornada
-            // rows[0] acessa o primeiro elemento do array de resultados
-            const livroDTO: LivroDTO = {
-                id_livro: respostaBD.rows[0].id_livro,
-                titulo: respostaBD.rows[0].titulo,
-                autor: respostaBD.rows[0].autor,
-                editora: respostaBD.rows[0].editora,
-                ano_publicacao: respostaBD.rows[0].ano_publicacao,
-                isbn: respostaBD.rows[0].isbn,
-                quant_total: respostaBD.rows[0].quant_total,
-                quant_disponivel: respostaBD.rows[0].quant_disponivel,
-                quant_aquisicao: respostaBD.rows[0].quant_aquisicao,
-                valor_aquisicao: respostaBD.rows[0].valor_aquisicao,
-                status_livro_emprestado: respostaBD.rows[0].status_livro_emprestado,
-                status_livro: respostaBD.rows[0].status_livro
-            };
+        // Destructuring: extrai todas as propriedades de rows[0] em variáveis,
+        // evitando repetir respostaBD.rows[0].x em cada linha.
+        // "id_livro: id" renomeia pois já existe um parâmetro chamado id_livro no escopo
+        const {
+            id_livro: id, titulo, autor, editora, ano_publicacao,
+            isbn, quant_total, quant_disponivel, quant_aquisicao,
+            valor_aquisicao, status_livro_emprestado, status_livro
+        } = respostaBD.rows[0];
 
-            // Retorna o objeto LivroDTO preenchido com os dados do banco
-            return livroDTO;
-        } catch (error) {
-            // Exibe o erro no console e retorna null em caso de falha
-            console.error(`Erro ao realizar consulta. ${error}`);
-            return null;
-        }
+        const livroDTO: LivroDTO = {
+            id_livro: id, titulo, autor, editora, ano_publicacao,
+            isbn, quant_total, quant_disponivel, quant_aquisicao,
+            valor_aquisicao, status_livro_emprestado, status_livro
+        };
+
+        return livroDTO;
+    } catch (error) {
+        console.error(`Erro ao realizar consulta. ${error}`);
+        return null;
     }
-
+}
     /**
      * Cadastra um novo livro no banco de dados
      * @param livro Objeto Livro contendo as informações a serem cadastradas
