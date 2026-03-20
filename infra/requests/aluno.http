@@ -1,32 +1,33 @@
 GET http://localhost:3333/api/alunos
 
 ###
-GET http://localhost:3333/api/alunos/22
+GET http://localhost:3333/api/alunos/1
 
 ###
 POST http://localhost:3333/api/alunos
 Content-Type: application/json
 
 {
-  "nome": "Violito",
-  "sobrenome": "Prantos",
-  "data_nascimento": "2003-07-10T03:00:00.000Z",
-  "endereco": "Rua do Ingá, 811",
-  "email": "prantos@gmail.com",
-  "celular": "16911915245"
+  "nome": "Carlos",
+  "sobrenome": "Ferreira",
+  "data_nascimento": "2001-05-20",
+  "endereco": "Rua das Flores, 42",
+  "email": "carlos.ferreira@gmail.com",
+  "celular": "11999887766"
 }
 
 ###
-PUT http://localhost:3333/api/alunos/24
+PUT http://localhost:3333/api/alunos/1
 Content-Type: application/json
 
 {
-  "nome": "Violito",
-  "sobrenome": "Prantos",
-  "data_nascimento": "2003-07-10T03:00:00.000Z",
-  "endereco": "Rua do Morumba, 203",
-  "email": "pranto@gmail.com",
-  "celular": "16911915245"
+  "nome": "Carlos",
+  "sobrenome": "Ferreira",
+  "data_nascimento": "2001-05-20",
+  "endereco": "Av. Paulista, 1000",
+  "email": "carlos.ferreira@outlook.com",
+  "celular": "11999887766"
 }
+
 ###
-DELETE http://localhost:3333/api/alunos/24
+DELETE http://localhost:3333/api/alunos/1

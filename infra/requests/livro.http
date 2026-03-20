@@ -1,37 +1,39 @@
 GET http://localhost:3333/api/livros
 
 ###
-GET http://localhost:3333/api/livros/21
+GET http://localhost:3333/api/livros/1
 
 ###
 POST http://localhost:3333/api/livros
 Content-Type: application/json
 
 {
-    "titulo": "O Senhor dos Anéis: O Retorno do Rei",
-    "autor": "J.R.R. Tolkien",
-    "editora": "HarperCollins",
-    "ano_publicacao": "1954",
-    "isbn": "978-0007525599",
-    "quant_total": 10,
-    "quant_disponivel": 10,
-    "valor_aquisicao": "150.00"
+  "titulo": "Clean Code",
+  "autor": "Robert C. Martin",
+  "editora": "Prentice Hall",
+  "ano_publicacao": "2008",
+  "isbn": "978-0132350884",
+  "quant_total": 5,
+  "quant_disponivel": 5,
+  "quant_aquisicao": 5,
+  "valor_aquisicao": 120.00
 }
 
 ###
-PUT http://localhost:3333/api/livros/21
+PUT http://localhost:3333/api/livros/1
 Content-Type: application/json
 
 {
-    "titulo": "O Senhor dos Anéis: As Duas Torres",
-    "autor": "J.R.R. Tolkien",
-    "editora": "HarperCollins",
-    "ano_publicacao": "1954",
-    "isbn": "978-0007525599",
-    "quant_total": 10,
-    "quant_disponivel": 10,
-    "valor_aquisicao": "150.00"
+  "titulo": "Clean Code",
+  "autor": "Robert C. Martin",
+  "editora": "Prentice Hall",
+  "ano_publicacao": "2008",
+  "isbn": "978-0132350884",
+  "quant_total": 8,
+  "quant_disponivel": 8,
+  "quant_aquisicao": 3,
+  "valor_aquisicao": 120.00
 }
 
 ###
-DELETE http://localhost:3333/api/livros/21
+DELETE http://localhost:3333/api/livros/1
